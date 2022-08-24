@@ -24,5 +24,6 @@ Image Based Lighting
 Deferred Rendering
 ![Deferred Rendering](https://github.com/MHSHM/CGX/blob/master/CGX/Screenshots/Gbuffer/GBuffer.png)
 
-# The next Step
+# The next Steps
 - Writing a path tracer using OpenGL Compute Shaders.
+- Automate the transition between the different scenes.
