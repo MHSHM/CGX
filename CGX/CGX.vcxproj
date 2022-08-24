@@ -311,6 +311,7 @@
     <None Include="Shaders\Geometry\WireFrame.vert" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Screenshots\IBL.png" />
     <Image Include="Screenshots\IBL1.PNG" />
     <Image Include="Screenshots\IBL2.PNG" />
     <Image Include="Screenshots\IBL3.PNG" />
