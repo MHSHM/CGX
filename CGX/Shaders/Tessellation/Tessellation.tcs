@@ -1,0 +1,22 @@
+#version 440 core
+
+layout (vertices = 4) out; 
+
+in vec2 o_uv[];
+out vec2 texCoord[];
+
+void main()
+{
+	const float TESS_LEVEL = 128.f;
+
+	gl_TessLevelOuter[0] = TESS_LEVEL;
+	gl_TessLevelOuter[1] = TESS_LEVEL;
+	gl_TessLevelOuter[2] = TESS_LEVEL;
+	gl_TessLevelOuter[3] = TESS_LEVEL;
+
+	gl_TessLevelInner[0] = TESS_LEVEL;
+	gl_TessLevelInner[1] = TESS_LEVEL;
+
+	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+	texCoord[gl_InvocationID] = o_uv[gl_InvocationID];
+}

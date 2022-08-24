@@ -1,0 +1,46 @@
+#version 440 core
+
+layout (quads, equal_spacing, ccw) in;
+
+uniform mat4 mvp;
+
+uniform sampler2D height_map;
+uniform sampler2D normal_map;
+
+in vec2 texCoord[];
+
+vec4 Interpolate_Position(vec4 v0, vec4 v1, vec4 v2, vec4 v3)
+{
+	vec4 a = mix(v0, v1, gl_TessCoord.x);
+	vec4 b = mix(v3, v2, gl_TessCoord.x);
+	vec4 c = mix(a, b, gl_TessCoord.y);
+
+	return c;
+}
+
+vec2 Interpolate_UV(vec2 uv0, vec2 uv1, vec2 uv2, vec2 uv3)
+{
+	vec2 a = mix(uv0, uv1, gl_TessCoord.x);
+	vec2 b = mix(uv3, uv2, gl_TessCoord.x);
+	vec2 c = mix(a, b, gl_TessCoord.y);
+
+	return c;
+}
+
+void main()
+{
+	vec2 uv = Interpolate_UV(texCoord[0], texCoord[1], texCoord[2], texCoord[3]);
+
+	float height = texture(height_map, uv).r * 0.1;
+	
+	vec3 normal = texture(normal_map, uv).rgb;
+	normal = normal * 2.0f - 1.0f;
+	normal = normalize(normal);
+	
+	vec3 displacement = normal * height;
+
+	vec3 position = vec3(Interpolate_Position(gl_in[0].gl_Position, gl_in[1].gl_Position,
+	gl_in[2].gl_Position, gl_in[3].gl_Position)) + displacement;
+
+	gl_Position = mvp * vec4(position, 1.0f);
+}
