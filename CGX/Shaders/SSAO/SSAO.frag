@@ -12,13 +12,13 @@ out float FragColor;
 
 void main()
 {
-	vec3 position = texture(position_map, o_uv).rgb; 
+	vec3 position = texture(position_map, o_uv).rgb;
 	vec3 normal   = texture(normal_map, o_uv).rgb;
 
-	vec3 up = vec3(0.0f, 1.0f, 0.0f);
-	vec3 right = normalize(cross(up, normal));
-	vec3 forward = normalize(cross(normal, right));
-	mat3 orie = mat3(right, normal, forward);
+	vec3 up = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+	vec3 tangent = normalize(cross(up, normal));
+	vec3 bitangent = normalize(cross(normal, tangent));
+	mat3 orie = mat3(tangent, normal, bitangent);
 	
 	float occlusion = 0.0f;
 	
@@ -27,13 +27,13 @@ void main()
 		vec3 sample_pos  = orie * samples[i];
 		sample_pos  = position + sample_pos * radius;
 
-		vec4 offset = vec4(sample_pos, 1.0f);
-		offset      = projection * offset;
-		offset.xyz /= offset.w;
-		offset.xyz  = offset.xyz * 0.5f + 0.5f;
+		vec4 new_position = vec4(sample_pos, 1.0f);
+		new_position      = projection * new_position;
+		new_position.xyz /= new_position.w;
+		new_position.xyz  = new_position.xyz * 0.5f + 0.5f;
 
 		float bias = 0.02f;
-		float sample_depth = texture(position_map, offset.xy).z;
+		float sample_depth = texture(position_map, new_position.xy).z;
 		occlusion        += (sample_depth >= sample_pos.z + bias ? 1.0f : 0.0f);
 	}
 

@@ -70,20 +70,20 @@ void main()
     vec3 normal = vec3(0.0f, 1.0f, 0.0f);
 
     vec3 up = vec3(0.0, 0.0, 1.0);
-	vec3 right = normalize(cross(up, normal));
-	vec3 forward = normalize(cross(normal, right));
-	mat3 orie = mat3(right, normal, forward);
+	vec3 tangent = normalize(cross(up, normal));
+	vec3 bitangent = normalize(cross(normal, tangent));
+	mat3 orie = mat3(tangent, normal, bitangent);
 
-    const int samples = 2048;
+    const int samples = 1024;
     
-    float A = 0.0; 
-    float B = 0.0; 
+    float scale = 0.0;
+    float bias = 0.0;
 
     for(int i = 0; i < samples; ++i)
     {
         vec2 hammersley = hammersley2d(i, samples);
         vec3 halfway = normalize(orie * ImportanceSampleGGX(hammersley, roughness));
-        vec3 light_direction = normalize(2.0 * dot(view, halfway) * halfway - view);
+        vec3 light_direction = normalize((2.0 * dot(view, halfway) * halfway) - view);
 
         float NdotL = max(light_direction.y, 0.0);
         float NdotH = max(halfway.y, 0.0);
@@ -95,15 +95,14 @@ void main()
             float G_M = (G * VdotH) / (NdotH * NdotV);
             float F = pow(1.0 - VdotH, 5.0);
 
-            A += (1.0 - F) * G_M;
-            B += F * G_M;
+            scale += (1.0 - F) * G_M;
+            bias += F * G_M;
         }
-
     }
 
-    A /= samples;
-    B /= samples;
+    scale /= samples;
+    bias /= samples;
 
-    color.r = A; 
-    color.g = B;
+    color.r = scale; 
+    color.g = bias;
 }

@@ -6,21 +6,20 @@ layout (binding = 0, rgba16f) uniform writeonly image2D output_image;
 
 layout(std430, binding = 1) buffer Positions
 {
-    vec3 positions[];
+    vec4 v_positions[];
 };
 
 layout(std430, binding = 2) buffer Faces
 {
-    unsigned int indices[];
+    unsigned int v_indices[];
 };
 
-const float EPSILON = 0.0001f;
+const float EPSILON = 0.00001f;
 
 // in radians
 uniform float FOV; 
 
 uniform mat4 camera_to_world; 
-uniform vec3 cam_pos; 
 
 struct Triangle 
 {
@@ -84,7 +83,7 @@ Hit RayTriangleIntersect(Triangle triangle, Ray ray, const bool isSingleSided)
     
     float t = dot(qvec, v1) * invDet;
 
-    if(t < 0)
+    if(t < 0.0)
     {
         hit.is_hit = false; 
         return hit; 
@@ -92,7 +91,7 @@ Hit RayTriangleIntersect(Triangle triangle, Ray ray, const bool isSingleSided)
 
     float u = dot(pvec, tvec) * invDet;
 
-    if(u < 0 || u > 1)
+    if(u < 0.0 || u > 1.0)
     {
         hit.is_hit = false; 
         return hit; 
@@ -101,7 +100,7 @@ Hit RayTriangleIntersect(Triangle triangle, Ray ray, const bool isSingleSided)
 
     float v = dot(qvec, ray.direction) * invDet; 
 
-    if(v < 0 || u + v > 1)
+    if(v < 0.0 || u + v > 1.0)
     {
         hit.is_hit = false; 
         return hit; 
@@ -123,7 +122,7 @@ vec4 CastRay(vec2 coord)
     float closest_hit = float(1e12);
     vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 13; ++i)
     {
         Hit hit = RayTriangleIntersect(triangles[i], ray, false);
 
@@ -166,14 +165,14 @@ void main()
     screen_space.x *= aspect;
     screen_space *= FOV_scalar;
 
-    triangles[0].positions[0] = positions[indices[0]] / 10.0;
-    triangles[0].positions[1] = positions[indices[1]] / 10.0;
-    triangles[0].positions[2] = positions[indices[2]] / 10.0;
-
-    triangles[1].positions[0] = positions[indices[3]] / 10.0;
-    triangles[1].positions[1] = positions[indices[4]] / 10.0;
-    triangles[1].positions[2] = positions[indices[5]] / 10.0;
-
+    uint triangle_index = 0; 
+    for(int i = 0; i < v_indices.length(); i+=3)
+    {
+        triangles[triangle_index].positions[0] = vec3(v_positions[v_indices[i]]);
+        triangles[triangle_index].positions[1] = vec3(v_positions[v_indices[i + 1]]);
+        triangles[triangle_index].positions[2] = vec3(v_positions[v_indices[i + 2]]);
+        triangle_index++; 
+    }
 
     vec4 color = CastRay(screen_space);
 

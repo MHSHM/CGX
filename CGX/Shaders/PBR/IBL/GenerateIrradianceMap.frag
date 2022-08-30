@@ -12,12 +12,14 @@ void main()
 {
 	vec3 normal = normalize(sample_pos);
 	vec3 up = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-	vec3 right = normalize(cross(up, normal));
-	vec3 forward = normalize(cross(normal, right));
-	mat3 orie = mat3(right, normal, forward);
+	vec3 tangent = normalize(cross(up, normal));
+	vec3 bitangent = normalize(cross(normal, tangent));
+	mat3 orie = mat3(tangent, normal, bitangent);
+
 	vec3 irr = vec3(0.0);
+	
 	float delta = 0.02;
-	uint samples = 0; 
+	uint samples = 0;
 
 	for(float phi = 0.0f; phi <= 2.0 * PI; phi += delta)
 	{

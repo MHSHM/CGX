@@ -87,7 +87,7 @@ void SShadow::Load_Data()
 
 	SceneNode* sphere = game->node_manager.Create_Scene_Node(this, "sphere");
 	Transform* sphere_transform = transform_manager.Add_Component(sphere->actor);
-	sphere_transform->translation = glm::vec3(0.0f, 1.0f, 1.0f);
+	sphere_transform->translation = glm::vec3(0.0f, 1.0f, -1.7f);
 	sphere_transform->scale = 0.01f;
 	PointLight* point_light_cmp = pointlight_manager.Add_Component(sphere->actor);
 
@@ -165,7 +165,7 @@ void SShadow::Generate_Depth_Maps()
 	float light_aspect = (float)depth_maps_buffer.depth_buffers[0].params.width / (float)depth_maps_buffer.depth_buffers[0].params.height;
 
 	glm::mat4 translation = glm::translate(glm::mat4(1.0f), -pointlight->light_position);
-	glm::mat4 light_perspective_proj = glm::perspective(glm::radians(90.0f), light_aspect, 0.1f, 25.0f);
+	glm::mat4 light_perspective_proj = glm::perspective(glm::radians(FOV), light_aspect, near, far);
 	
 	std::vector<glm::mat4> shadow_transforms;
 	shadow_transforms.reserve(6);
@@ -210,6 +210,8 @@ void SShadow::Generate_Depth_Maps()
 		for (auto& mesh : model->meshes)
 		{
 			game->shaders_table["DepthMap"].Bind();
+
+			game->shaders_table["DepthMap"].Set_Float_Uniform("far_plane", far);
 
 			game->shaders_table["DepthMap"].Set_Matrix4_Uniform("model", transform->model_matrix);
 
@@ -261,6 +263,8 @@ void SShadow::Draw_Scene_With_Shadows()
 
 			game->shaders_table["shadow"].Set_Vec3_Uniform("point_light.light_position", point_light->light_position);
 			game->shaders_table["shadow"].Set_Vec3_Uniform("point_light.light_intensity", point_light->light_intensity);
+
+			game->shaders_table["shadow"].Set_Float_Uniform("far_plane", far); 
 
 			game->shaders_table["shadow"].Set_Matrix4_Uniform("mvp", mvp);
 			game->shaders_table["shadow"].Set_Matrix4_Uniform("model", transform->model_matrix);

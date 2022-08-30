@@ -289,14 +289,12 @@
     <None Include="Shaders\Raytracing\RayTracingCompute.glsl" />
     <None Include="Shaders\Raytracing\RayTracingSphereCompute.glsl" />
     <None Include="Shaders\ShadowMpping\DepthMap.frag" />
-    <None Include="Shaders\ShadowMpping\DepthMap.geo" />
+    <None Include="Shaders\ShadowMpping\DepthMap.geom" />
     <None Include="Shaders\ShadowMpping\DepthMap.vert" />
     <None Include="Shaders\EnvMapping\envMap.frag" />
     <None Include="Shaders\EnvMapping\envMap.vert" />
     <None Include="Shaders\ShadowMpping\Shadow.frag" />
     <None Include="Shaders\ShadowMpping\Shadow.vert" />
-    <None Include="Shaders\ShadowMpping\Shadow2.frag" />
-    <None Include="Shaders\ShadowMpping\Shadow2.vert" />
     <None Include="Shaders\SSAO\BlurSSAO.frag" />
     <None Include="Shaders\SSAO\BlurSSAO.vert" />
     <None Include="Shaders\SSAO\SSAO.frag" />
@@ -311,12 +309,14 @@
     <None Include="Shaders\Geometry\WireFrame.vert" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Screenshots\Env Reflections.PNG" />
     <Image Include="Screenshots\IBL.png" />
     <Image Include="Screenshots\IBL1.PNG" />
     <Image Include="Screenshots\IBL2.PNG" />
     <Image Include="Screenshots\IBL3.PNG" />
     <Image Include="Screenshots\IBL4.PNG" />
     <Image Include="Screenshots\IBL5.PNG" />
+    <Image Include="Screenshots\shadow_mapping.PNG" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

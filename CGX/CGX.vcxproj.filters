@@ -310,12 +310,10 @@
     <None Include="Shaders\Deferred\Deferred.vert" />
     <None Include="Shaders\Deferred\Deferred.frag" />
     <None Include="Shaders\ShadowMpping\DepthMap.frag" />
-    <None Include="Shaders\ShadowMpping\DepthMap.geo" />
+    <None Include="Shaders\ShadowMpping\DepthMap.geom" />
     <None Include="Shaders\ShadowMpping\DepthMap.vert" />
     <None Include="Shaders\ShadowMpping\Shadow.frag" />
     <None Include="Shaders\ShadowMpping\Shadow.vert" />
-    <None Include="Shaders\ShadowMpping\Shadow2.frag" />
-    <None Include="Shaders\ShadowMpping\Shadow2.vert" />
     <None Include="Shaders\Tessellation\Tessellation.vert" />
     <None Include="Shaders\Tessellation\Tessellation.tes" />
     <None Include="Shaders\Tessellation\Tessellation.tcs" />
@@ -375,6 +373,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Screenshots\IBL.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Screenshots\Env Reflections.PNG">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Screenshots\shadow_mapping.PNG">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

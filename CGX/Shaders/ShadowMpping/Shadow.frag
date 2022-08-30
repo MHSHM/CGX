@@ -25,6 +25,7 @@ in vec2 o_uv;
 uniform PhongMaterial material;
 uniform PointLight point_light;
 uniform samplerCube depth_map;
+uniform float far_plane; 
 
 out vec4 final_color;
 
@@ -46,30 +47,28 @@ void main()
 	vec3 c1 = light_per_unit_area * amount_of_reflected_light;
 
 	// Shadow Calculations
-	vec3 offset[20] = vec3[]
-	(
-		vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
-		vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
-		vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
-		vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
-		vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
-	);
-
-	vec3 sample_dir = o_position - point_light.light_position;
-	float current_depth = length(sample_dir);
+	vec3 frag_to_light = o_position - point_light.light_position;
+	float current_depth = length(frag_to_light);
 	float bias = 0.2f;
 	float shadow = 0.0f;
-	int samples = 20; 
+	int samples = 0;
 	float lobe_radius = 0.02f;
 
-	for(int i = 0; i < samples; ++i)
+	for(float x = -1.0; x <= 1.0; x += 1.0f)
 	{
-		float closest_dist_to_light = texture(depth_map, sample_dir + offset[i] * lobe_radius).r; 
-		closest_dist_to_light *= 25.0f;
-		shadow += current_depth - bias > closest_dist_to_light ? 1.0f : 0.0f; 
+		for(float y = -1.0; y <= 1.0; y += 1.0f)
+		{
+			for(float z = -1.0; z <= 1.0; z += 1.0f)
+			{
+				float closestDepth = texture(depth_map, frag_to_light + vec3(x, y, z) * lobe_radius).r;
+				closestDepth *= far_plane;
+				if(current_depth > closestDepth + bias) shadow += 1.0;
+				++samples; 
+			}
+		}
 	}
-	
-	shadow /= samples; 
+
+	shadow /= samples;
 	vec3 color = c1 + material.ka;
 	final_color = vec4(color * (1.0f - shadow), 1.0f);
 }

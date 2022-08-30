@@ -10,7 +10,7 @@ void main()
 {
 	vec2 dim = textureSize(ssao, 0);
 	vec2 pixel_coord = vec2(o_uv.x * dim.x + 0.5f, o_uv.y * dim.y + 0.5f);
-	float avg_occlusion = 0.0f; 
+	float avg_occlusion = 0.0f;
 
 	for(int i = -2; i < 2; ++i)
 	{

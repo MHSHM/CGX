@@ -59,21 +59,28 @@ void main()
 	
 	vec3 view = normal;
 	vec3 up = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-	vec3 right = normalize(cross(up, normal));
-	vec3 forward = normalize(cross(normal, right));
-	mat3 orie = mat3(right, normal, forward);
+	vec3 tangent = normalize(cross(up, normal));
+	vec3 bitangent = normalize(cross(normal, tangent));
+	mat3 orie = mat3(tangent, normal, bitangent);
 
 	vec3 prefiltered_color = vec3(0.0);
 
 	for(int i = 0; i < N; ++i)
 	{
-		vec2 h = hammersley2d(i, N); 
+		vec2 h = hammersley2d(i, N);
 
 		vec3 halfway = normalize(orie * ImportanceSampleGGX(h, normal, roughness));
 		vec3 light_direction = normalize(2.0 * dot(view, halfway) * halfway - view);
 
 		float LdotN = max(dot(light_direction, normal), 0.0f); 
 
+		/*
+		if(LdotN > 0.0)
+		{
+			prefiltered_color += textureLod(cube_map, light_direction, 0.0).rgb;
+		}
+		*/
+		
 		if(LdotN > 0.0)
 		{
 			float NdotH = max(dot(normal, halfway), 0.0f); 
@@ -82,7 +89,7 @@ void main()
 			float D   = GGX_Distribution(normal, halfway, roughness);
 			float pdf = (D * NdotH / (4.0 * HdotV)) + 0.0001;
 
-			float resolution = 512.0; // resolution of source cubemap (per face)
+			float resolution = 512.0;
 			float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
 			float saSample = 1.0 / (float(N) * pdf + 0.0001);
 
@@ -90,6 +97,7 @@ void main()
 
 			prefiltered_color += textureLod(cube_map, light_direction, mipLevel).rgb;
 		}
+		
 	}
 
 	color = vec4(prefiltered_color / N, 1.0);

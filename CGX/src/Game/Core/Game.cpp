@@ -95,7 +95,6 @@ bool Game::Init()
 
 	deferred.Load_Data(); 
 	*/
-
 	
 	if (!ibl.Init()) 
 	{
@@ -105,7 +104,6 @@ bool Game::Init()
 
 	ibl.Load_Data();
 	
-
 	/*
 	if (!rays.Init())
 	{
@@ -135,8 +133,8 @@ void Game::Pre_Init()
 	//renderer.Send_Data_To_GPU(&deferred);
 	renderer.Send_Data_To_GPU(&ibl);
 	//renderer.Send_Data_To_GPU(&rays); 
-	renderer.Send_Data_To_GPU(&final);
 	//renderer.Send_Data_To_GPU(&shadow); 
+	renderer.Send_Data_To_GPU(&final);
 
 	Load_Shaders();
 }
@@ -161,13 +159,6 @@ void Game::Shutdown()
 	}
 
 	shaders_table.clear();
-
-	//environment.Clear(); 
-	//shadow.Clear(); 
-	//tessellation.Clear(); 
-	//deferred.Clear(); 
-	ibl.Clear(); 
-	//rays.Clear(); 
 
 	glfwTerminate();
 }
@@ -220,10 +211,6 @@ void Game::Load_Shaders()
 	shaders_table["shadow"].Create_Shader_Program("Shaders/ShadowMpping/Shadow.vert",
 		"Shaders/ShadowMpping/Shadow.frag", "shadow");
 
-	shaders_table["shadow2"] = Shader();
-	shaders_table["shadow2"].Create_Shader_Program("Shaders/ShadowMpping/Shadow2.vert",
-		"Shaders/ShadowMpping/Shadow2.frag", "shadow2");
-
 	shaders_table["wireFrame"] = Shader();
 	shaders_table["wireFrame"].Create_Shader_Program("Shaders/Geometry/WireFrame.vert",
 		"Shaders/Geometry/WireFrame.frag", "Shaders/Geometry/WireFrame.geo", "wireFrame");
@@ -231,7 +218,7 @@ void Game::Load_Shaders()
 	shaders_table["DepthMap"] = Shader();
 	shaders_table["DepthMap"].Create_Shader_Program("Shaders/ShadowMpping/DepthMap.vert",
 		"Shaders/ShadowMpping/DepthMap.frag",
-		"Shaders/ShadowMpping/DepthMap.geo", "DepthMap");
+		"Shaders/ShadowMpping/DepthMap.geom", "DepthMap");
 
 	shaders_table["tessellation"] = Shader(); 
 	shaders_table["tessellation"].Create_Shader_Program("Shaders/Tessellation/Tessellation.vert",

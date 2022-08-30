@@ -30,13 +30,14 @@ void Renderer::Draw()
 	//game->shadow.Draw(); 
 	//game->tessellation.Draw(); 
 	//game->deferred.Draw(); 
+	//game->rays.Draw();
 	game->ibl.Draw();
-	//game->rays.Draw(); 
 	game->final.Draw();
 
 	game->ibl.editor.Draw();
 	//game->shadow.editor.Draw();
 	//game->environment.editor.Draw(); 
+	//game->rays.editor.Draw(); 
 
 	glfwSwapBuffers(game->window.window_ptr);
 }

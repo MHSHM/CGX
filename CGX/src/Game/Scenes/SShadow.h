@@ -33,4 +33,9 @@ public:
 
 	Framebuffer shadow_render_target;
 	Framebuffer depth_maps_buffer;
+
+	// light camera
+	float near = 0.1f; 
+	float far = 25.0f; 
+	float FOV = 90.0f; 
 };

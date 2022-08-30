@@ -20,11 +20,6 @@ void Random_Points_In_Hemisphere(std::vector<glm::vec3>& samples, uint32_t N)
     std::mt19937 gen_y(dev_y());
     std::uniform_real_distribution<> dis_y(0.0f, 1.0f);
 
-    auto lerp = [](float a, float b, float f)
-    {
-        return a + f * (b - a);
-    };
-
     for (uint32_t i = 0; i < N; ++i)
     {
         float cosTheta = 1.0f - dis_x(gen_x);
@@ -567,8 +562,7 @@ void SIBL::Pre_SSAO_Data()
 
     for (int i = 0; i < N; ++i)
     {
-        float scale = (float)i / (float)N;
-        scale = glm::lerp(0.1f, 1.0f, scale * scale);
+        float scale = std::max((float)i / (float)N, 0.0001f);
         samples[i] *= scale;
     }
 }
@@ -594,7 +588,7 @@ void SIBL::Calculate_SSAO()
     }
 
     game->shaders_table["SSAO"].Set_Matrix4_Uniform("projection", scene_camera->prespective_proj);
-    game->shaders_table["SSAO"].Set_Float_Uniform("radius", 0.5f);
+    game->shaders_table["SSAO"].Set_Float_Uniform("radius", 1.0f);
 
     Model* model = nodes_map["quad"]->actor->Get_Component<Model>();
 
