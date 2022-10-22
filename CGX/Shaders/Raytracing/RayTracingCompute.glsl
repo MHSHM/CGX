@@ -4,37 +4,22 @@ layout (local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 
 layout (binding = 0, rgba16f) uniform writeonly image2D output_image;
 
-layout(std430, binding = 1) buffer Positions
-{
-    vec4 v_positions[];
-};
-
-layout(std430, binding = 2) buffer Faces
-{
-    unsigned int v_indices[];
-};
-
 const float EPSILON = 0.00001f;
 
 // in radians
-uniform float FOV; 
+uniform float FOV;
 
 uniform mat4 camera_to_world; 
-
-struct Triangle 
-{
-    vec3 positions[3];
-    vec3 normals[3];
-    vec3 uvs[3];
-};
 
 struct Hit
 {
     float t0;
+    float t1;
     vec3 p0;
-    vec3 barycentric_coord;
+    vec3 p1;
     bool is_hit;
 };
+
 
 struct Ray
 {
@@ -48,98 +33,67 @@ struct Ray
 
 };
 
-Triangle triangles[13];
-
-Hit RayTriangleIntersect(Triangle triangle, Ray ray, const bool isSingleSided)
+struct Sphere
 {
-    Hit hit; 
+    vec3 center;
+    float radius;
+};
 
-    vec3 v0 = triangle.positions[1] - triangle.positions[0]; 
-    vec3 v1 = triangle.positions[2] - triangle.positions[0]; 
-    vec3 pvec = cross(ray.direction, v1); 
-    float det = dot(pvec, v0);
+Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool isSingleSided)
+{
+    vec3 oc = ray.origin - sphere.center;
+    float a = dot(ray.direction, ray.direction);
+    float b = 2.0 * dot(oc, ray.direction);
+    float c = dot(oc, oc) - sphere.radius * sphere.radius;
+    float discriminant = b*b - 4*a*c;
 
-    if(isSingleSided)
+    Hit hit;
+
+    if (discriminant >= 0)
     {
-        if(det < EPSILON)
+        float s0 = ((-1.0f * b) + discriminant) / 2.0f;
+        float s1 = ((-1.0f * b) - discriminant) / 2.0f;
+
+        if(s0 < 0.0)
         {
-            hit.is_hit = false; 
-            return hit; 
+            hit.is_hit = false;
+            return hit;
         }
-    }
-    else
-    {
-        if(abs(det) < EPSILON)
-        {
-            hit.is_hit = false; 
-            return hit; 
-        }
-    }
 
-    float invDet = 1.0f / det; 
+        hit.t0 = s0;
+        hit.t1 = s1;
 
-    vec3 tvec   = ray.origin - triangle.positions[0]; 
-    vec3 qvec = cross(tvec, v0);
-    
-    float t = dot(qvec, v1) * invDet;
+        hit.p0 = ray.Point_At(s0);
+        hit.p1 = ray.Point_At(s1);
 
-    if(t < 0.0)
-    {
-        hit.is_hit = false; 
-        return hit; 
+        hit.is_hit = true; 
+
+        return hit;
     }
 
-    float u = dot(pvec, tvec) * invDet;
+    hit.is_hit = false;
 
-    if(u < 0.0 || u > 1.0)
-    {
-        hit.is_hit = false; 
-        return hit; 
-    }
-
-
-    float v = dot(qvec, ray.direction) * invDet; 
-
-    if(v < 0.0 || u + v > 1.0)
-    {
-        hit.is_hit = false; 
-        return hit; 
-    }
-
-    hit.is_hit = true;
-    hit.t0 = t;
-    hit.p0 = ray.Point_At(t);
-    hit.barycentric_coord = vec3(u, v, 1.0f - u - v);
     return hit;
 }
 
 vec4 CastRay(vec2 coord)
-{    
+{
     Ray ray;
     ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
     ray.direction = vec3(camera_to_world * vec4(coord, -1.0f, 0.0f));
 
-    float closest_hit = float(1e12);
-    vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere sphere; 
+    sphere.center = vec3(0.0f, 0.0f, 0.0f);
+    sphere.radius = 1.0f;
 
-    for(int i = 0; i < 13; ++i)
+    Hit hit = RaySphereIntersect(sphere, ray, false);
+
+    if(!hit.is_hit)
     {
-        Hit hit = RayTriangleIntersect(triangles[i], ray, false);
-
-        if(hit.is_hit == false) continue; 
-
-        if(hit.t0 < closest_hit)
-        {
-            vec3 red = vec3(1.0f, 0.0f, 0.0f) * hit.barycentric_coord.x;
-            vec3 green = vec3(0.0f, 1.0f, 0.0f) * hit.barycentric_coord.y;
-            vec3 blue = vec3(0.0f, 0.0f, 1.0f) * hit.barycentric_coord.z;
-
-            color = vec4(red + green + blue, 1.0f);
-            closest_hit = hit.t0;
-        }
+        return vec4(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    return color; 
+    return vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 
@@ -151,7 +105,7 @@ void main()
 
 	if(pixel_coord.x >= dim.x || pixel_coord.y >= dim.y)
 	{
-		return; 
+		return;
 	}
 
     float aspect = float(dim.x) / float(dim.y);
@@ -164,15 +118,6 @@ void main()
 
     screen_space.x *= aspect;
     screen_space *= FOV_scalar;
-
-    uint triangle_index = 0; 
-    for(int i = 0; i < v_indices.length(); i+=3)
-    {
-        triangles[triangle_index].positions[0] = vec3(v_positions[v_indices[i]]);
-        triangles[triangle_index].positions[1] = vec3(v_positions[v_indices[i + 1]]);
-        triangles[triangle_index].positions[2] = vec3(v_positions[v_indices[i + 2]]);
-        triangle_index++; 
-    }
 
     vec4 color = CastRay(screen_space);
 

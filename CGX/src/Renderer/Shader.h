@@ -11,7 +11,7 @@ class Shader
 public:
 	Shader();
 
-	void Create_Shader_Program(const std::string& compute_shader_path, const std::string& _tag);
+	void Create_Shader_Program(const std::string& _compute_shader_path, const std::string& _tag);
 	void Create_Shader_Program(const std::string& _vertex_shader_path, const std::string& _fragment_shader_path, const std::string& _tag);
 	void Create_Shader_Program(const std::string& _vertex_shader_path, const std::string& _fragment_shader_path, const std::string& _geometry_shader_path, const std::string& _tag);
 	void Create_Shader_Program(const std::string& vertex_shader_path, const std::string& fragment_shader_path,
@@ -27,6 +27,7 @@ public:
 	void Set_Int_Uniform(const std::string& uniform, const int& val);
 
 	void Re_Compile();
+	void Re_Compile_Compute();
 
 	void Bind() const;
 	void Un_Bind() const;
@@ -38,16 +39,19 @@ private:
 	unsigned int Compile(unsigned int type, const std::string& source);
 	void Re_Compile_Vertex_Shader();
 	void Re_Compile_Fragment_Shader();
+	void Re_Compile_Compute_Shader();
 
 private:
 	unsigned int shader_program_id;
 	unsigned int vertex_shader;
 	unsigned int fragment_shader;
 	unsigned int geometry_shader;
+	unsigned int compute_shader;
 
 	std::string vertex_shader_path;
 	std::string fragment_shader_path;
 	std::string geometry_shader_path;
+	std::string compute_shader_path;
 
 	std::string tag = "";
 };
