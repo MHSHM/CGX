@@ -103,8 +103,8 @@ bool Game::Init()
 	}
 
 	ibl.Load_Data();
+	*/
 	
-	/*
 	if (!rays.Init())
 	{
 		LOG_ERR("failied to initialize vxgi scene\n");
@@ -113,8 +113,15 @@ bool Game::Init()
 
 	rays.Load_Data();
 	rays.Initialize_Components();
+	
+	/*
+	if (!voxelization.Init()) 
+	{
+		LOG_ERR("failied to initialize voxelization scene\n");
+		return false;
+	}
+	voxelization.Load_Data();
 	*/
-
 	if (!final.Init()) 
 	{
 		LOG_ERR("failed to initialize final scene\n"); 
@@ -131,9 +138,10 @@ void Game::Pre_Init()
 	//renderer.Send_Data_To_GPU(&environment);
 	//renderer.Send_Data_To_GPU(&tessellation);
 	//renderer.Send_Data_To_GPU(&deferred);
-	renderer.Send_Data_To_GPU(&ibl);
-	//renderer.Send_Data_To_GPU(&rays); 
+	//renderer.Send_Data_To_GPU(&ibl);
+	renderer.Send_Data_To_GPU(&rays); 
 	//renderer.Send_Data_To_GPU(&shadow); 
+	//renderer.Send_Data_To_GPU(&voxelization);
 	renderer.Send_Data_To_GPU(&final);
 
 	Load_Shaders();
@@ -179,8 +187,9 @@ void Game::Update()
 	//tessellation.Update(deltatime);
 	//deferred.Update(deltatime); 
 	//pbr.Update(deltatime);
-	ibl.Update(deltatime); 
-	//rays.Update(deltatime);
+	//ibl.Update(deltatime); 
+	rays.Update(deltatime);
+	//voxelization.Update(deltatime);
 	final.Update(deltatime);
 }
 

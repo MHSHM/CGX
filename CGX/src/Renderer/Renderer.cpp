@@ -30,8 +30,9 @@ void Renderer::Draw()
 	//game->shadow.Draw(); 
 	//game->tessellation.Draw(); 
 	//game->deferred.Draw(); 
-	//game->rays.Draw();
-	game->ibl.Draw();
+	game->rays.Draw();
+	//game->ibl.Draw();
+	//game->voxelization.Draw();
 	game->final.Draw();
 
 	game->ibl.editor.Draw();
