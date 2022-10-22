@@ -39,39 +39,37 @@ struct Sphere
     float radius;
 };
 
-Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool isSingleSided)
+Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
 {
     vec3 oc = ray.origin - sphere.center;
     float a = dot(ray.direction, ray.direction);
     float b = 2.0 * dot(oc, ray.direction);
-    float c = dot(oc, oc) - sphere.radius * sphere.radius;
+    float c = dot(oc, oc) - pow(sphere.radius, 2.0);
     float discriminant = b*b - 4*a*c;
 
     Hit hit;
+    hit.is_hit = false;
 
     if (discriminant >= 0)
     {
-        float s0 = ((-1.0f * b) + discriminant) / 2.0f;
-        float s1 = ((-1.0f * b) - discriminant) / 2.0f;
+        float t0 = ((-1.0f * b) + discriminant) / 2.0f;
+        float t1 = ((-1.0f * b) - discriminant) / 2.0f;
 
-        if(s0 < 0.0)
+        if(max(t0, t1) < 0.0)
         {
-            hit.is_hit = false;
             return hit;
         }
 
-        hit.t0 = s0;
-        hit.t1 = s1;
+        hit.t0 = t0;
+        hit.t1 = t1;
 
-        hit.p0 = ray.Point_At(s0);
-        hit.p1 = ray.Point_At(s1);
+        hit.p0 = ray.Point_At(t0);
+        hit.p1 = ray.Point_At(t1);
 
-        hit.is_hit = true; 
+        hit.is_hit = true;
 
         return hit;
     }
-
-    hit.is_hit = false;
 
     return hit;
 }
@@ -102,11 +100,6 @@ void main()
 	ivec2 dim = imageSize(output_image);
 
 	uvec2 pixel_coord = gl_GlobalInvocationID.xy;
-
-	if(pixel_coord.x >= dim.x || pixel_coord.y >= dim.y)
-	{
-		return;
-	}
 
     float aspect = float(dim.x) / float(dim.y);
     float FOV_scalar = tan(FOV * 0.5f);
