@@ -78,7 +78,7 @@ void SFinal::Draw()
 
 	Model* model = nodes.back().actor->Get_Component<Model>();
 
-	game->ibl.display_refered_render_target.color_buffers[0].Bind(0);
+	game->rays.render_target.color_buffers[0].Bind(0);
 	game->shaders_table["basic"].Set_Int_Uniform("scene", 0);
 
 	model->meshes.back().vao.Bind();

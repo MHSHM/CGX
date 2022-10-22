@@ -95,7 +95,7 @@ bool Game::Init()
 
 	deferred.Load_Data(); 
 	*/
-	
+	/*
 	if (!ibl.Init()) 
 	{
 		LOG_ERR("failied to initialize ibl scene\n");
@@ -104,7 +104,7 @@ bool Game::Init()
 
 	ibl.Load_Data();
 	*/
-	
+
 	if (!rays.Init())
 	{
 		LOG_ERR("failied to initialize vxgi scene\n");

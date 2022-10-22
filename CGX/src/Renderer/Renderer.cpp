@@ -35,10 +35,10 @@ void Renderer::Draw()
 	//game->voxelization.Draw();
 	game->final.Draw();
 
-	game->ibl.editor.Draw();
+	//game->ibl.editor.Draw();
 	//game->shadow.editor.Draw();
 	//game->environment.editor.Draw(); 
-	//game->rays.editor.Draw(); 
+	game->rays.editor.Draw(); 
 
 	glfwSwapBuffers(game->window.window_ptr);
 }
