@@ -135,7 +135,7 @@ void SRayTracing::Update_Components(float deltatime)
 
 void SRayTracing::Update_Shaders()
 {
-
+    game->shaders_table["RayTracing"].Re_Compile_Compute();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

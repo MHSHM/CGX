@@ -149,18 +149,67 @@ void Shader::Re_Compile_Fragment_Shader()
 	}
 }
 
+void Shader::Re_Compile_Compute_Shader()
+{
+	// Get Previous Source Code
+	int len;
+	char prev_source[4096];
+	glGetShaderiv(compute_shader, GL_SHADER_SOURCE_LENGTH, &len);
+	glGetShaderSource(compute_shader, len, &len, prev_source);
+
+	// Get Current Source Code
+	const std::string current_source = Parse_Source(compute_shader_path);
+
+	// Compare the two source codes
+	int res = strcmp(prev_source, current_source.c_str());
+
+	if (res != 0)
+	{
+		std::cout << "Compilling compute Shader with tag " + tag + "...\n";
+
+		const char* src = current_source.c_str();
+
+		glShaderSource(compute_shader, 1, &src, nullptr);
+		glCompileShader(compute_shader);
+
+		int success = 0;
+		glGetShaderiv(compute_shader, GL_COMPILE_STATUS, &success);
+
+		if (success == GL_FALSE)
+		{
+			int maxLength = 0;
+			glGetShaderiv(compute_shader, GL_INFO_LOG_LENGTH, &maxLength);
+			std::vector<char> errorLog(maxLength);
+			glGetShaderInfoLog(compute_shader, maxLength, &maxLength, &errorLog[0]);
+			for (auto& c : errorLog) std::cout << c;
+			return;
+		}
+
+		std::cout << "Compiled Successfully\n";
+
+		glLinkProgram(shader_program_id);
+	}
+}
+
 void Shader::Re_Compile()
 {
 	Re_Compile_Vertex_Shader();
 	Re_Compile_Fragment_Shader();
 }
 
-void Shader::Create_Shader_Program(const std::string& compute_shader_path, const std::string& _tag)
+void Shader::Re_Compile_Compute()
 {
+	Re_Compile_Compute_Shader();
+}
+
+void Shader::Create_Shader_Program(const std::string& _compute_shader_path, const std::string& _tag)
+{
+	compute_shader_path = _compute_shader_path;
+
 	tag = _tag; 
 	std::string compute_source = Parse_Source(compute_shader_path);
 
-	unsigned int compute_shader = Compile(GL_COMPUTE_SHADER, compute_source);
+	compute_shader = Compile(GL_COMPUTE_SHADER, compute_source);
 
 	shader_program_id = glCreateProgram();
 	glAttachShader(shader_program_id, compute_shader);
