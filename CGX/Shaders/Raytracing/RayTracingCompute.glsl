@@ -77,20 +77,29 @@ vec4 CastRay(vec2 coord)
     ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
     ray.direction = vec3(camera_to_world * vec4(coord, -1.0f, 0.0f));
 
-    Sphere sphere;
-    sphere.center = vec3(0.0f, 0.0f, 0.0f);
-    sphere.radius = 1.0f;
+    Sphere spheres[3];
 
-    Hit hit = RaySphereIntersect(sphere, ray, false);
-
-    if(!hit.is_hit)
+    for(int i = 0; i < 3; ++i)
     {
-        return vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        spheres[i].center = vec3((i + 1) * 3, 0.0f, 0.0f);
+        spheres[i].radius = 1.0f;
     }
 
-    vec3 normal = hit.normal * 0.5f + 0.5f;
+    vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    float closest_hit = 1e11;
+    
+    for(int i = 0; i < 3; ++i)
+    {
+        Hit hit = RaySphereIntersect(spheres[i], ray, false);
 
-    return vec4(normal, 1.0f);
+        if(hit.is_hit && hit.t1 < closest_hit)
+        {
+            closest_hit = hit.t1;
+            color = vec4(0.8f, 0.3f, 1.0f, 1.0f);
+        }
+    }
+
+    return color;
 }
 
 
