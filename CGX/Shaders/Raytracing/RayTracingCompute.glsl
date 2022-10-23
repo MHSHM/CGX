@@ -17,6 +17,7 @@ struct Hit
     float t1;
     vec3 p0;
     vec3 p1;
+    vec3 normal;
     bool is_hit;
 };
 
@@ -43,28 +44,24 @@ Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
 {
     vec3 oc = ray.origin - sphere.center;
     float a = dot(ray.direction, ray.direction);
-    float b = 2.0 * dot(oc, ray.direction);
-    float c = dot(oc, oc) - pow(sphere.radius, 2.0);
-    float discriminant = b*b - 4*a*c;
+    float b = 2.0f * dot(oc, ray.direction);
+    float c = dot(oc, oc) - pow(sphere.radius, 2.0f);
+    float discriminant = b*b - 4.0f*a*c;
 
     Hit hit;
     hit.is_hit = false;
 
-    if (discriminant >= 0)
+    if (discriminant >= 0.0f)
     {
         float t0 = ((-1.0f * b) + discriminant) / 2.0f;
         float t1 = ((-1.0f * b) - discriminant) / 2.0f;
-
-        if(max(t0, t1) < 0.0)
-        {
-            return hit;
-        }
 
         hit.t0 = t0;
         hit.t1 = t1;
 
         hit.p0 = ray.Point_At(t0);
         hit.p1 = ray.Point_At(t1);
+        hit.normal = normalize(hit.p1 - sphere.center);
 
         hit.is_hit = true;
 
@@ -80,7 +77,7 @@ vec4 CastRay(vec2 coord)
     ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
     ray.direction = vec3(camera_to_world * vec4(coord, -1.0f, 0.0f));
 
-    Sphere sphere; 
+    Sphere sphere;
     sphere.center = vec3(0.0f, 0.0f, 0.0f);
     sphere.radius = 1.0f;
 
@@ -91,7 +88,9 @@ vec4 CastRay(vec2 coord)
         return vec4(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    return vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    vec3 normal = hit.normal * 0.5f + 0.5f;
+
+    return vec4(normal, 1.0f);
 }
 
 
