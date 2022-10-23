@@ -77,18 +77,21 @@ vec4 CastRay(vec2 coord)
     ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
     ray.direction = vec3(camera_to_world * vec4(coord, -1.0f, 0.0f));
 
-    Sphere spheres[3];
+    const int SPHERES = 3;
+    const int OFFSET  = 3; 
 
-    for(int i = 0; i < 3; ++i)
+    Sphere spheres[SPHERES];
+
+    for(int i = 0; i < SPHERES; ++i)
     {
-        spheres[i].center = vec3((i + 1) * 3, 0.0f, 0.0f);
+        spheres[i].center = vec3((i - 1) * OFFSET, 0.0f, -3.0f);
         spheres[i].radius = 1.0f;
     }
 
     vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     float closest_hit = 1e11;
     
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < SPHERES; ++i)
     {
         Hit hit = RaySphereIntersect(spheres[i], ray, false);
 
