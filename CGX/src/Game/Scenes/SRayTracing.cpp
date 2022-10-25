@@ -73,6 +73,12 @@ void SRayTracing::Load_Data()
     cameras.Add_Component(camera->actor);
     camera_transform->translation = glm::vec3(0.0f, 0.0f, 2.0f);
 
+    SceneNode* sphere = game->node_manager.Create_Scene_Node(this, "sphere");
+    Transform* sphere_transform = transforms.Add_Component(sphere->actor);
+    sphere_transform->translation = glm::vec3(0.0f, 1.0f, -2.0f);
+    sphere_transform->scale = 0.01f;
+    PointLight* point_light_cmp = pointlights.Add_Component(sphere->actor);
+
     SceneNode* cube = game->node_manager.Create_Scene_Node(this, "cube");
     Transform* cube_transform = transforms.Add_Component(cube->actor);
     models.Add_Component(cube->actor);
@@ -129,6 +135,11 @@ void SRayTracing::Update_Components(float deltatime)
     for (auto& camera : cameras.components)
     {
         camera.Update(deltatime);
+    }
+
+    for (auto& pointlight : pointlights.components) 
+    {
+        pointlight.Update(deltatime);
     }
 
 }
@@ -240,6 +251,7 @@ void SRayTracing::Generate_Image()
     SceneNode* camera = nodes_map["camera"];
     Camera* camera_cmp = camera->actor->Get_Component<Camera>();
     Transform* camera_transform = camera->actor->Get_Component<Transform>();
+    PointLight* pointlight = nodes_map["sphere"]->actor->Get_Component<PointLight>();
 
     game->shaders_table["RayTracing"].Bind();
 
@@ -254,6 +266,9 @@ void SRayTracing::Generate_Image()
 
     game->shaders_table["RayTracing"].Set_Float_Uniform("FOV", glm::radians(camera_cmp->FOV));
     game->shaders_table["RayTracing"].Set_Matrix4_Uniform("camera_to_world", glm::inverse(camera_cmp->view));
+    game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.position", pointlight->light_position);
+    game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.color", pointlight->light_intensity);
+
 
     const int THREADS_X = 8;
     const int THREADS_Y = 4;
