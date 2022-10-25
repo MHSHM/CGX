@@ -107,7 +107,7 @@ void SceneHierarchyWidget::Create_Transform_Window(Transform* transform, float d
 	const float MAX = 100.0f;
 	const float MIN = -100.0f;
 	const float transslation_speed = 1.0f;
-	const float scale_speed = 0.01f;
+	const float scale_speed = 0.1f;
 	const float rotation_speed = 1.1f;
 
 	float* rotation_angles[3] = { &transform->angle_x, &transform->angle_y, &transform->angle_z };

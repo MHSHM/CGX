@@ -73,6 +73,23 @@ void SRayTracing::Load_Data()
     cameras.Add_Component(camera->actor);
     camera_transform->translation = glm::vec3(0.0f, 0.0f, 2.0f);
 
+    SceneNode* pointlight = game->node_manager.Create_Scene_Node(this, "pointlight");
+    Transform* pointlight_transform = transforms.Add_Component(pointlight->actor);
+    pointlight_transform->translation = glm::vec3(0.0f, 1.0f, -2.0f);
+    pointlight_transform->scale = 0.01f;
+    PointLight* point_light_cmp = pointlights.Add_Component(pointlight->actor);
+
+    SceneNode* spheres_container = game->node_manager.Create_Scene_Node(this, "spheres container");
+
+    for (int i = 0; i < 3; ++i) 
+    {
+        SceneNode* sphere = game->node_manager.Create_Scene_Node(this, "sphere_" + std::to_string(i));
+        Transform* sphere_transform = transforms.Add_Component(sphere->actor);
+        sphere_transform->translation = glm::vec3((i - 1) * 3, 0.0f, -3.0f);
+        sphere_transform->scale = 1.0f;
+        spheres_container->Add_Child(sphere);
+    }
+
     SceneNode* cube = game->node_manager.Create_Scene_Node(this, "cube");
     Transform* cube_transform = transforms.Add_Component(cube->actor);
     models.Add_Component(cube->actor);
@@ -240,6 +257,8 @@ void SRayTracing::Generate_Image()
     SceneNode* camera = nodes_map["camera"];
     Camera* camera_cmp = camera->actor->Get_Component<Camera>();
     Transform* camera_transform = camera->actor->Get_Component<Transform>();
+    PointLight* pointlight = nodes_map["pointlight"]->actor->Get_Component<PointLight>();
+    SceneNode* spheres = nodes_map["spheres container"];
 
     game->shaders_table["RayTracing"].Bind();
 
@@ -254,6 +273,16 @@ void SRayTracing::Generate_Image()
 
     game->shaders_table["RayTracing"].Set_Float_Uniform("FOV", glm::radians(camera_cmp->FOV));
     game->shaders_table["RayTracing"].Set_Matrix4_Uniform("camera_to_world", glm::inverse(camera_cmp->view));
+    game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.position", pointlight->light_position);
+    game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.color", pointlight->light_intensity);
+    game->shaders_table["RayTracing"].Set_Int_Uniform("spheres_count", spheres->children.size());
+
+    for (int i = 0; i < spheres->children.size(); ++i) 
+    {
+        Transform* child_transform = spheres->children[i]->actor->Get_Component<Transform>();
+        game->shaders_table["RayTracing"].Set_Vec3_Uniform("spheres[" + std::to_string(i) + "].center", child_transform->translation);
+        game->shaders_table["RayTracing"].Set_Float_Uniform("spheres[" + std::to_string(i) + "].radius", child_transform->scale);
+    }
 
     const int THREADS_X = 8;
     const int THREADS_Y = 4;

@@ -5,11 +5,28 @@ layout (local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout (binding = 0, rgba16f) uniform writeonly image2D output_image;
 
 const float EPSILON = 0.00001f;
-
+const float PI = 3.14159265359f;
+const int MAX_SPHERES = 10;
 // in radians
 uniform float FOV;
 
 uniform mat4 camera_to_world; 
+
+struct PointLight
+{
+    vec3 position;
+    vec3 color;
+};
+
+struct Sphere
+{
+    vec3 center;
+    float radius;
+};
+
+uniform PointLight pointlight;
+uniform Sphere spheres[MAX_SPHERES];
+uniform int spheres_count;
 
 struct Hit
 {
@@ -32,12 +49,6 @@ struct Ray
         return origin + t * direction;
     }
 
-};
-
-struct Sphere
-{
-    vec3 center;
-    float radius;
 };
 
 Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
@@ -77,21 +88,10 @@ vec4 CastRay(vec2 coord)
     ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
     ray.direction = vec3(camera_to_world * vec4(coord, -1.0f, 0.0f));
 
-    const int SPHERES = 3;
-    const int OFFSET  = 3; 
-
-    Sphere spheres[SPHERES];
-
-    for(int i = 0; i < SPHERES; ++i)
-    {
-        spheres[i].center = vec3((i - 1) * OFFSET, 0.0f, -3.0f);
-        spheres[i].radius = 1.0f;
-    }
-
     vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     float closest_hit = 1e11;
     
-    for(int i = 0; i < SPHERES; ++i)
+    for(int i = 0; i < spheres_count; ++i)
     {
         Hit hit = RaySphereIntersect(spheres[i], ray, false);
 
