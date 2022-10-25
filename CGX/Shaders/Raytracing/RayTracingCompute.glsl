@@ -10,7 +10,7 @@ const int MAX_SPHERES = 10;
 // in radians
 uniform float FOV;
 
-uniform mat4 camera_to_world; 
+uniform mat4 camera_to_world;
 
 struct PointLight
 {
@@ -26,6 +26,7 @@ struct Sphere
 
 uniform PointLight pointlight;
 uniform Sphere spheres[MAX_SPHERES];
+uniform vec3 spheres_color[MAX_SPHERES];
 uniform int spheres_count;
 
 struct Hit
@@ -82,13 +83,14 @@ Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
     return hit;
 }
 
-vec3 Shade(vec3 position, vec3 normal)
+vec3 Shade(vec3 position, vec3 normal, vec3 sphere_color)
 {
     vec3 light_direction = normalize(pointlight.position - position);
     float cos_theta = max(dot(light_direction, normal), 0.0f);
-    float dd = length(pointlight.position - position);
-    vec3 light_per_unit_area = pointlight.color * (1.0f / (dd + EPSILON)) * cos_theta;
-    vec3 color = light_per_unit_area * vec3(1.0f, 0.0f, 0.0f);
+    float d = length(pointlight.position - position);
+    vec3 light_per_unit_area = pointlight.color * sphere_color * (1.0f / (d + EPSILON)) * cos_theta;
+    vec3 ambient = pointlight.color * sphere_color * 0.1f;
+    vec3 color = light_per_unit_area + ambient;
     return color;
 }
 
@@ -104,11 +106,10 @@ vec4 CastRay(vec2 coord)
     for(int i = 0; i < spheres_count; ++i)
     {
         Hit hit = RaySphereIntersect(spheres[i], ray, false);
-
         if(hit.is_hit && hit.t1 < closest_hit)
         {
             closest_hit = hit.t1;
-            vec3 shaded_color = Shade(hit.p1, hit.normal);
+            vec3 shaded_color = Shade(hit.p1, hit.normal, spheres_color[i]);
             return vec4(shaded_color, 1.0f);
         }
     }

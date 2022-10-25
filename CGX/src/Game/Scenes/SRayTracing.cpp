@@ -5,6 +5,13 @@
 #include <iostream>
 #include <random>
 
+struct Sphere 
+{
+    glm::vec3 center;
+    glm::vec3 color;
+    float radius;
+};
+
 SRayTracing::SRayTracing(Game* _game):
 	Scene(_game)
 {
@@ -79,14 +86,16 @@ void SRayTracing::Load_Data()
     pointlight_transform->scale = 0.01f;
     PointLight* point_light_cmp = pointlights.Add_Component(pointlight->actor);
 
+    constexpr int N = 3;
     SceneNode* spheres_container = game->node_manager.Create_Scene_Node(this, "spheres container");
-
-    for (int i = 0; i < 3; ++i) 
+    spheres_color.resize(N);
+    for (int i = 0; i < N; ++i)
     {
         SceneNode* sphere = game->node_manager.Create_Scene_Node(this, "sphere_" + std::to_string(i));
         Transform* sphere_transform = transforms.Add_Component(sphere->actor);
         sphere_transform->translation = glm::vec3((i - 1) * 3, 0.0f, -3.0f);
         sphere_transform->scale = 1.0f;
+        spheres_color[i] = glm::vec3(0.3f, 0.5f, 0.7f);
         spheres_container->Add_Child(sphere);
     }
 
@@ -234,12 +243,6 @@ void SRayTracing::Generate_Image()
 
     game->shaders_table["RayTracing"].Bind();
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, positions_buffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positions_buffer);
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indices_buffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indices_buffer);
-
     image2D.Bind_As_Image(0, GL_WRITE_ONLY, GL_RGBA16F);
     game->shaders_table["RayTracing"].Set_Int_Uniform("output_image", 0);
 
@@ -249,11 +252,12 @@ void SRayTracing::Generate_Image()
     game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.color", pointlight->light_intensity);
     game->shaders_table["RayTracing"].Set_Int_Uniform("spheres_count", spheres->children.size());
 
-    for (int i = 0; i < spheres->children.size(); ++i) 
+    for (int i = 0; i < spheres->children.size(); ++i)
     {
         Transform* child_transform = spheres->children[i]->actor->Get_Component<Transform>();
         game->shaders_table["RayTracing"].Set_Vec3_Uniform("spheres[" + std::to_string(i) + "].center", child_transform->translation);
         game->shaders_table["RayTracing"].Set_Float_Uniform("spheres[" + std::to_string(i) + "].radius", child_transform->scale);
+        game->shaders_table["RayTracing"].Set_Vec3_Uniform("spheres_color[" + std::to_string(i) + "]", spheres_color[i]);
     }
 
     const int THREADS_X = 8;
