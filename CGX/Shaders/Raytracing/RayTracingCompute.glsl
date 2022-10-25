@@ -57,7 +57,7 @@ Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
     float a = dot(ray.direction, ray.direction);
     float b = 2.0f * dot(oc, ray.direction);
     float c = dot(oc, oc) - pow(sphere.radius, 2.0f);
-    float discriminant = b*b - 4.0f*a*c;
+    float discriminant = b * b - 4.0f * a * c;
 
     Hit hit;
     hit.is_hit = false;
@@ -82,11 +82,21 @@ Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
     return hit;
 }
 
+vec3 Shade(vec3 position, vec3 normal)
+{
+    vec3 light_direction = normalize(pointlight.position - position);
+    float cos_theta = max(dot(light_direction, normal), 0.0f);
+    float dd = length(pointlight.position - position);
+    vec3 light_per_unit_area = pointlight.color * (1.0f / (dd + EPSILON)) * cos_theta;
+    vec3 color = light_per_unit_area * vec3(1.0f, 0.0f, 0.0f);
+    return color;
+}
+
 vec4 CastRay(vec2 coord)
 {
     Ray ray;
     ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
-    ray.direction = vec3(camera_to_world * vec4(coord, -1.0f, 0.0f));
+    ray.direction = normalize(vec3(camera_to_world * vec4(coord, -1.0f, 0.0f)));
 
     vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     float closest_hit = 1e11;
@@ -98,7 +108,8 @@ vec4 CastRay(vec2 coord)
         if(hit.is_hit && hit.t1 < closest_hit)
         {
             closest_hit = hit.t1;
-            color = vec4(0.8f, 0.3f, 1.0f, 1.0f);
+            vec3 shaded_color = Shade(hit.p1, hit.normal);
+            return vec4(shaded_color, 1.0f);
         }
     }
 

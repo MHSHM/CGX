@@ -154,6 +154,8 @@ void SRayTracing::Update_Components(float deltatime)
     }
 }
 
+}
+
 void SRayTracing::Update_Shaders()
 {
     game->shaders_table["RayTracing"].Re_Compile_Compute();
