@@ -148,6 +148,10 @@ void SRayTracing::Update_Components(float deltatime)
         camera.Update(deltatime);
     }
 
+    for (auto& pointlight : pointlights.components) 
+    {
+        pointlight.Update(deltatime);
+    }
 }
 
 void SRayTracing::Update_Shaders()
@@ -212,44 +216,12 @@ void SRayTracing::Scene_Logic(float deltatime)
 
 void SRayTracing::Draw()
 {
-    static bool init_buffers = false; 
-    if (!init_buffers) 
-    {
-        Initialize_Buffers(); 
-        init_buffers = true; 
-    }
     Generate_Image();
     Draw_Image_On_Screen();
 }
 
 void SRayTracing::Clear()
 {
-}
-
-void SRayTracing::Initialize_Buffers()
-{
-    Model* cube = nodes_map["cube"]->actor->Get_Component<Model>();
-    std::vector<glm::vec3>& positions  = cube->meshes[0].render_data.positions;
-    std::vector<unsigned int>& indices = cube->meshes[0].render_data.indices;
-    std::vector<glm::vec4> ps; 
-    ps.reserve(positions.size()); 
-
-    for (int i = 0; i < positions.size(); ++i) 
-    {
-        ps.push_back(glm::vec4(positions[i], 1.0f));
-    }
-
-    glGenBuffers(1, &positions_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, positions_buffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec4) * positions.size(), ps.data(), GL_STATIC_READ);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positions_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glGenBuffers(1, &indices_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indices_buffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_READ);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indices_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void SRayTracing::Generate_Image()

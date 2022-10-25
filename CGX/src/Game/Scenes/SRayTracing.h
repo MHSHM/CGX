@@ -6,6 +6,7 @@
 #include <Model.h>
 #include <Camera.h>
 #include <Framebuffer.h>
+#include <PointLight.h>
 
 #include "../Editor/Editor.h"
 
@@ -32,12 +33,12 @@ public:
 	unsigned int normals_buffer; 
 
 public:
-	void Initialize_Buffers(); 
 	void Generate_Image(); 
 	void Draw_Image_On_Screen(); 
 
 public:
 	ComponentManager<Transform> transforms;
+	ComponentManager<PointLight> pointlights;
 	ComponentManager<Model> models;
 	ComponentManager<Camera> cameras;
 	Editor editor;
