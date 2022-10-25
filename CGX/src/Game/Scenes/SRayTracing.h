@@ -46,4 +46,5 @@ public:
 public:
 	TextureAttachment image2D;
 	Framebuffer render_target;
+	std::vector<glm::vec3> spheres_color;
 };
