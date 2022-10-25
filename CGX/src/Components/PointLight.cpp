@@ -5,7 +5,7 @@
 PointLight::PointLight(Actor* _owner):
 	Component(_owner),
 	light_position(glm::vec3(0.0f, 0.0f, 0.0f)),
-	light_intensity(glm::vec3(5.0f, 5.0f, 5.0f))
+	light_intensity(glm::vec3(1.0f, 1.0f, 1.0f))
 {
 	type = "PointLight";
 }
