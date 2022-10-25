@@ -33,7 +33,6 @@ public:
 	unsigned int normals_buffer; 
 
 public:
-	void Initialize_Buffers(); 
 	void Generate_Image(); 
 	void Draw_Image_On_Screen(); 
 

@@ -73,11 +73,22 @@ void SRayTracing::Load_Data()
     cameras.Add_Component(camera->actor);
     camera_transform->translation = glm::vec3(0.0f, 0.0f, 2.0f);
 
-    SceneNode* sphere = game->node_manager.Create_Scene_Node(this, "sphere");
-    Transform* sphere_transform = transforms.Add_Component(sphere->actor);
-    sphere_transform->translation = glm::vec3(0.0f, 1.0f, -2.0f);
-    sphere_transform->scale = 0.01f;
-    PointLight* point_light_cmp = pointlights.Add_Component(sphere->actor);
+    SceneNode* pointlight = game->node_manager.Create_Scene_Node(this, "pointlight");
+    Transform* pointlight_transform = transforms.Add_Component(pointlight->actor);
+    pointlight_transform->translation = glm::vec3(0.0f, 1.0f, -2.0f);
+    pointlight_transform->scale = 0.01f;
+    PointLight* point_light_cmp = pointlights.Add_Component(pointlight->actor);
+
+    SceneNode* spheres_container = game->node_manager.Create_Scene_Node(this, "spheres container");
+
+    for (int i = 0; i < 3; ++i) 
+    {
+        SceneNode* sphere = game->node_manager.Create_Scene_Node(this, "sphere_" + std::to_string(i));
+        Transform* sphere_transform = transforms.Add_Component(sphere->actor);
+        sphere_transform->translation = glm::vec3((i - 1) * 3, 0.0f, -3.0f);
+        sphere_transform->scale = 1.0f;
+        spheres_container->Add_Child(sphere);
+    }
 
     SceneNode* cube = game->node_manager.Create_Scene_Node(this, "cube");
     Transform* cube_transform = transforms.Add_Component(cube->actor);
@@ -141,7 +152,6 @@ void SRayTracing::Update_Components(float deltatime)
     {
         pointlight.Update(deltatime);
     }
-
 }
 
 void SRayTracing::Update_Shaders()
@@ -206,12 +216,6 @@ void SRayTracing::Scene_Logic(float deltatime)
 
 void SRayTracing::Draw()
 {
-    static bool init_buffers = false; 
-    if (!init_buffers) 
-    {
-        Initialize_Buffers(); 
-        init_buffers = true; 
-    }
     Generate_Image();
     Draw_Image_On_Screen();
 }
@@ -220,38 +224,13 @@ void SRayTracing::Clear()
 {
 }
 
-void SRayTracing::Initialize_Buffers()
-{
-    Model* cube = nodes_map["cube"]->actor->Get_Component<Model>();
-    std::vector<glm::vec3>& positions  = cube->meshes[0].render_data.positions;
-    std::vector<unsigned int>& indices = cube->meshes[0].render_data.indices;
-    std::vector<glm::vec4> ps; 
-    ps.reserve(positions.size()); 
-
-    for (int i = 0; i < positions.size(); ++i) 
-    {
-        ps.push_back(glm::vec4(positions[i], 1.0f));
-    }
-
-    glGenBuffers(1, &positions_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, positions_buffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec4) * positions.size(), ps.data(), GL_STATIC_READ);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positions_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glGenBuffers(1, &indices_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indices_buffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_READ);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indices_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
-
 void SRayTracing::Generate_Image()
 {
     SceneNode* camera = nodes_map["camera"];
     Camera* camera_cmp = camera->actor->Get_Component<Camera>();
     Transform* camera_transform = camera->actor->Get_Component<Transform>();
-    PointLight* pointlight = nodes_map["sphere"]->actor->Get_Component<PointLight>();
+    PointLight* pointlight = nodes_map["pointlight"]->actor->Get_Component<PointLight>();
+    SceneNode* spheres = nodes_map["spheres container"];
 
     game->shaders_table["RayTracing"].Bind();
 
@@ -268,7 +247,14 @@ void SRayTracing::Generate_Image()
     game->shaders_table["RayTracing"].Set_Matrix4_Uniform("camera_to_world", glm::inverse(camera_cmp->view));
     game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.position", pointlight->light_position);
     game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.color", pointlight->light_intensity);
+    game->shaders_table["RayTracing"].Set_Int_Uniform("spheres_count", spheres->children.size());
 
+    for (int i = 0; i < spheres->children.size(); ++i) 
+    {
+        Transform* child_transform = spheres->children[i]->actor->Get_Component<Transform>();
+        game->shaders_table["RayTracing"].Set_Vec3_Uniform("spheres[" + std::to_string(i) + "].center", child_transform->translation);
+        game->shaders_table["RayTracing"].Set_Float_Uniform("spheres[" + std::to_string(i) + "].radius", child_transform->scale);
+    }
 
     const int THREADS_X = 8;
     const int THREADS_Y = 4;
