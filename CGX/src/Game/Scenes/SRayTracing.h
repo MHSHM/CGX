@@ -6,6 +6,7 @@
 #include <Model.h>
 #include <Camera.h>
 #include <Framebuffer.h>
+#include <PointLight.h>
 
 #include "../Editor/Editor.h"
 
@@ -38,6 +39,7 @@ public:
 
 public:
 	ComponentManager<Transform> transforms;
+	ComponentManager<PointLight> pointlights;
 	ComponentManager<Model> models;
 	ComponentManager<Camera> cameras;
 	Editor editor;

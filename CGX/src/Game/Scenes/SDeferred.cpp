@@ -303,7 +303,7 @@ void SDeferred::Draw_Second_Pass()
     glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    PointLight* pointlight = nodes_map["sphere"]->actor->Get_Component<PointLight>(); 
+    PointLight* pointlight = nodes_map["sphere"]->actor->Get_Component<PointLight>();
     Model* quad_model = nodes_map["quad"]->actor->Get_Component<Model>(); 
 
     game->shaders_table["deferred2"].Bind(); 
@@ -320,8 +320,8 @@ void SDeferred::Draw_Second_Pass()
     GBuffer.color_buffers[3].Bind(3); 
     game->shaders_table["deferred2"].Set_Int_Uniform("specular_map", 3); 
 
-    game->shaders_table["deferred2"].Set_Vec3_Uniform("pointlight.light_position", pointlight->light_position); 
-    game->shaders_table["deferred2"].Set_Vec3_Uniform("pointlight.light_intensity", pointlight->light_intensity);
+    game->shaders_table["deferred2"].Set_Vec3_Uniform("pointlight.position", pointlight->light_position); 
+    game->shaders_table["deferred2"].Set_Vec3_Uniform("pointlight.intensity", pointlight->light_intensity);
 
     quad_model->meshes[0].vao.Bind();
 
