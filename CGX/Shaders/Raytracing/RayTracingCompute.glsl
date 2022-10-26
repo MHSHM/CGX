@@ -37,6 +37,7 @@ struct Hit
     vec3 p1;
     vec3 normal;
     bool is_hit;
+    vec4 color;
 };
 
 
@@ -94,26 +95,38 @@ vec3 Shade(vec3 position, vec3 normal, vec3 sphere_color)
     return color;
 }
 
-vec4 CastRay(vec2 coord)
+vec4 CastRay(Ray ray, float bounces = 1.0f)
 {
-    Ray ray;
-    ray.origin    = vec3(camera_to_world * vec4(vec3(0.0f, 0.0f, 0.0f), 1.0f));
-    ray.direction = normalize(vec3(camera_to_world * vec4(coord, -1.0f, 0.0f)));
+    Hit final_hit;
+    final_hit.t1 = 1e11;
+    final_hit.is_hit = false;
+    final_hit.color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    vec4 color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    float closest_hit = 1e11;
-    
+    if(bounces <= 0.0)
+        return final_hit.color;
+
+    // see if the ray hits anything in the world
     for(int i = 0; i < spheres_count; ++i)
     {
         Hit hit = RaySphereIntersect(spheres[i], ray, false);
-        if(hit.is_hit && hit.t1 < closest_hit)
+        if(hit.is_hit && hit.t1 < final_hit.t1)
         {
-            closest_hit = hit.t1;
-            vec3 shaded_color = Shade(hit.p1, hit.normal, spheres_color[i]);
-            return vec4(shaded_color, 1.0f);
+            final_hit.is_hit = hit.is_hit;
+            final_hit.t1 = hit.t1;
+            final_hit.p1 = hit.p1;
+            final_hit.normal = hit.normal;
+            final_hit.color = vec4(spheres_color[i], 1.0f);
         }
     }
 
+    if(final_hit.is_hit)
+    {
+        return final_hit.color;
+    }
+
+    float t = 0.5f * (ray.direction.y + 1.0f);
+    vec3 miss_color = (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+    vec4 color = vec4(miss_color, 1.0f);
     return color;
 }
 
@@ -135,7 +148,12 @@ void main()
     screen_space.x *= aspect;
     screen_space *= FOV_scalar;
 
-    vec4 color = CastRay(screen_space);
+    vec3 origin    = vec3(camera_to_world * vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    vec3 direction = vec3(camera_to_world * (vec4(screen_space, -1.0f, 0.0f) - vec4(origin.xy, 0.0f, 0.0f)));
+    Ray ray; 
+    ray.origin = origin; 
+    ray.direction = direction;
+    vec4 color = CastRay(ray);
 
 	imageStore(output_image, ivec2(pixel_coord), color);
 }
