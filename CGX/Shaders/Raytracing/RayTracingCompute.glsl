@@ -84,17 +84,6 @@ Hit RaySphereIntersect(Sphere sphere, Ray ray, const bool backface_cull)
     return hit;
 }
 
-vec3 Shade(vec3 position, vec3 normal, vec3 sphere_color)
-{
-    vec3 light_direction = normalize(pointlight.position - position);
-    float cos_theta = max(dot(light_direction, normal), 0.0f);
-    float d = length(pointlight.position - position);
-    vec3 light_per_unit_area = pointlight.color * sphere_color * (1.0f / (d + EPSILON)) * cos_theta;
-    vec3 ambient = pointlight.color * sphere_color * 0.1f;
-    vec3 color = light_per_unit_area + ambient;
-    return color;
-}
-
 vec4 CastRay(Ray ray, float bounces = 1.0f)
 {
     Hit final_hit;
@@ -130,6 +119,9 @@ vec4 CastRay(Ray ray, float bounces = 1.0f)
     return color;
 }
 
+float random(vec3 co) {
+    return fract(sin(dot(co.xyz, vec3(12.9898, 78.233, 151.7182))) * 43758.5453);
+}
 
 void main()
 {
@@ -150,10 +142,23 @@ void main()
 
     vec3 origin    = vec3(camera_to_world * vec4(0.0f, 0.0f, 0.0f, 1.0f));
     vec3 direction = vec3(camera_to_world * (vec4(screen_space, -1.0f, 0.0f) - vec4(origin.xy, 0.0f, 0.0f)));
-    Ray ray; 
-    ray.origin = origin; 
-    ray.direction = direction;
-    vec4 color = CastRay(ray);
 
-	imageStore(output_image, ivec2(pixel_coord), color);
+    // antialiasing
+    vec4 color = vec4(0.0f);
+    int rays_count = 0;
+    vec2 texel_size = 1.0f / dim;
+    for(int i = 0; i < 8; ++i)
+    {
+        vec2 offset = vec2(random(vec3(pixel_coord.x, i, 1.0f)), random(vec3(pixel_coord.y, i, 1.0f)));
+
+        Ray ray;
+        ray.origin = origin;
+        ray.direction = direction + vec3(offset, 0.0f) * vec3(texel_size, 1.0f);
+
+        color += CastRay(ray);
+
+        ++rays_count;
+    }
+
+	imageStore(output_image, ivec2(pixel_coord), color / float(rays_count));
 }

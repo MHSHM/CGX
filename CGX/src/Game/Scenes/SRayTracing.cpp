@@ -80,12 +80,6 @@ void SRayTracing::Load_Data()
     cameras.Add_Component(camera->actor);
     camera_transform->translation = glm::vec3(0.0f, 0.0f, 2.0f);
 
-    SceneNode* pointlight = game->node_manager.Create_Scene_Node(this, "pointlight");
-    Transform* pointlight_transform = transforms.Add_Component(pointlight->actor);
-    pointlight_transform->translation = glm::vec3(0.0f, 1.0f, -2.0f);
-    pointlight_transform->scale = 0.01f;
-    PointLight* point_light_cmp = pointlights.Add_Component(pointlight->actor);
-
     constexpr int N = 3;
     SceneNode* spheres_container = game->node_manager.Create_Scene_Node(this, "spheres container");
     spheres_color.resize(N);
@@ -98,12 +92,6 @@ void SRayTracing::Load_Data()
         spheres_color[i] = glm::vec3(0.3f, 0.5f, 0.7f);
         spheres_container->Add_Child(sphere);
     }
-
-    SceneNode* cube = game->node_manager.Create_Scene_Node(this, "cube");
-    Transform* cube_transform = transforms.Add_Component(cube->actor);
-    models.Add_Component(cube->actor);
-    cube_transform->translation = glm::vec3(0.0f, 0.0f, 0.0f);
-    game->loader.Load(cube, "Assets/cube/cube.obj");
 
     SceneNode* quad = game->node_manager.Create_Scene_Node(this, "quad");
     Transform* quad_transform = transforms.Add_Component(quad->actor);
@@ -238,7 +226,6 @@ void SRayTracing::Generate_Image()
     SceneNode* camera = nodes_map["camera"];
     Camera* camera_cmp = camera->actor->Get_Component<Camera>();
     Transform* camera_transform = camera->actor->Get_Component<Transform>();
-    PointLight* pointlight = nodes_map["pointlight"]->actor->Get_Component<PointLight>();
     SceneNode* spheres = nodes_map["spheres container"];
 
     game->shaders_table["RayTracing"].Bind();
@@ -248,8 +235,6 @@ void SRayTracing::Generate_Image()
 
     game->shaders_table["RayTracing"].Set_Float_Uniform("FOV", glm::radians(camera_cmp->FOV));
     game->shaders_table["RayTracing"].Set_Matrix4_Uniform("camera_to_world", glm::inverse(camera_cmp->view));
-    game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.position", pointlight->light_position);
-    game->shaders_table["RayTracing"].Set_Vec3_Uniform("pointlight.color", pointlight->light_intensity);
     game->shaders_table["RayTracing"].Set_Int_Uniform("spheres_count", spheres->children.size());
 
     for (int i = 0; i < spheres->children.size(); ++i)
